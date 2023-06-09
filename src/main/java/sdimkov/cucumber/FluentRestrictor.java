@@ -25,6 +25,7 @@ public class FluentRestrictor {
         this.inputPath = file.toPath();
         this.pathToCurrentFile = "\nPath to current file:\n " + this.inputPath;
         this.input = Files.readAllLines(inputPath, Charset.defaultCharset());
+        System.out.println("Processing file:" + file.getName());
     }
 
     public FluentRestrictor tryToUpdateFileNameSet(Set<String> featureFileNames) {
@@ -52,29 +53,30 @@ public class FluentRestrictor {
         return this;
     }
 
-    public FluentRestrictor setNameRestrictionFor(List<String> entity, Set<String> scenarioNames) {
+    public FluentRestrictor setNameRestrictionFor(List<String> entities, Set<String> scenarioNames) {
         for (String line : input) {
-            String word = getFirstWord(line);
-
-            if (entity.contains(word)) {
-                String entityValue = getAllButFirstWord(line, word);
-                //System.out.println("getallbutfirstword: " + entityValue);
-                if (word.contains("Scenario")) {
-                    if (scenarioNames.contains(entityValue)) {
-                        throw new IllegalStateException("Found more than one scenario with same name:\n "
-                                + entityValue + pathToCurrentFile);
-                    }
-                    scenarioNames.add(entityValue);
-                    //System.out.println("scenarionames: " + scenarioNames);
+            if (doesLineStartMatch(line, entities)) {
+                String word = getFirstWord(line);
+                //TODO rework - only intended to work with scenarios right now
+                String entityValue = getAllButFirstWord(line, word).replace("Outline:", "").trim();
+                System.out.println("getallbutfirstword: " + entityValue);
+                if (scenarioNames.contains(entityValue)) {
+                    throw new IllegalStateException("Found more than one scenario with same name:\n "
+                            + entityValue + pathToCurrentFile);
                 }
+                scenarioNames.add(entityValue);
             }
-
         }
+
         return this;
     }
 
     private String getFirstWord(String line) {
         return line.trim().split(" ")[0];
+    }
+
+    private boolean doesLineStartMatch(String line, List<String> words) {
+        return words.stream().anyMatch(word -> line.trim().startsWith(word));
     }
 
     private String getAllButFirstWord(String line, String word) {
