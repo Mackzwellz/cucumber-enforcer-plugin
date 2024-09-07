@@ -11,9 +11,11 @@ import org.apache.maven.plugins.annotations.Parameter;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 
@@ -88,6 +90,7 @@ public class FeatureFormatterMojo extends AbstractMojo {
         Set<String> featureFileNames = new HashSet<>();
         Set<String> featureNames = new HashSet<>();
         Set<String> scenarioNames = new HashSet<>();
+        List<String> restrictorIssues = new ArrayList<>();
 
         while (iterator.hasNext()) {
             File featureFile = iterator.next();
@@ -103,7 +106,9 @@ public class FeatureFormatterMojo extends AbstractMojo {
             } catch (IOException e) {
                 getLog().error("Unable to process " + featureFile.getAbsolutePath(), e);
             } catch (IllegalStateException t) {
-                getLog().error("Feature restrictor found an issue: " + t.getMessage());
+                String restrictorError = t.getMessage();
+                getLog().error("Feature restrictor found an issue: " + restrictorError);
+                restrictorIssues.add(restrictorError);
                 hasRestrictionIssues = true;
             } catch (Throwable t) {
                 getLog().error("Unhandled exception:", t);
@@ -120,7 +125,7 @@ public class FeatureFormatterMojo extends AbstractMojo {
         }
 
         if (hasRestrictionIssues) {
-            throw new MojoFailureException("Some files contain issues, fix them to proceed! (see logs for details)");
+            throw new MojoFailureException("Some files contain issues, fix them to proceed! List of issues:\n" + restrictorIssues);
         }
     }
 
@@ -135,9 +140,8 @@ public class FeatureFormatterMojo extends AbstractMojo {
             throws IOException {
         new FluentFeatureRestrictor(featureFile)
                 .setFileNameRestrictionFor(featureFileNames)
-                .setNameRestrictionFor(
-                        Arrays.asList("Feature:", "Scenario:", "Scenario Outline:"),
-                        featureNames, scenarioNames);
+                .tryToUpdateFeatureNameSet(featureNames)
+                .setNameRestrictionFor(Arrays.asList("Scenario:", "Scenario Outline:"), scenarioNames);
     }
 
     private void doFormat(File featureFile) throws IOException {
