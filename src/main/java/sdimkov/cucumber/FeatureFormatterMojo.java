@@ -89,6 +89,7 @@ public class FeatureFormatterMojo extends AbstractMojo {
         boolean hasRestrictionIssues = false;
         Set<String> featureFileNames = new HashSet<>();
         Set<String> featureNames = new HashSet<>();
+        Set<String> ruleNames = new HashSet<>();
         Set<String> scenarioNames = new HashSet<>();
         List<String> restrictorIssues = new ArrayList<>();
 
@@ -100,7 +101,7 @@ public class FeatureFormatterMojo extends AbstractMojo {
                 if (applyFormatting) doFormat(featureFile);
 
                 if (applyRestrictions) {
-                    doFeatureRestrict(featureFile, featureFileNames, featureNames, scenarioNames);
+                    doFeatureRestrict(featureFile, featureFileNames, featureNames, ruleNames, scenarioNames);
                 }
 
             } catch (IOException e) {
@@ -115,33 +116,19 @@ public class FeatureFormatterMojo extends AbstractMojo {
             }
         }
 
-        try {
-            if (applyRestrictions) {
-                doClassRestrict();
-            }
-        } catch (IllegalStateException t) {
-            getLog().error("Step def restrictor found an issue: " + t.getMessage());
-            hasRestrictionIssues = true;
-        }
-
         if (hasRestrictionIssues) {
             throw new MojoFailureException("Some files contain issues, fix them to proceed! List of issues:\n" + restrictorIssues);
         }
     }
 
-    private void doClassRestrict() {
-        //File stepDefDir = new File(""); //passthrough actual dir
-        new FluentClassRestrictor(stepDefDir, new HashSet<>())
-                .restrictDuplicateStepMethodNamesAndUsages();
-    }
-
     private void doFeatureRestrict(File featureFile, Set<String> featureFileNames,
-                                   Set<String> featureNames, Set<String> scenarioNames)
+                                   Set<String> featureNames, Set<String> ruleNames, Set<String> scenarioNames)
             throws IOException {
         new FluentFeatureRestrictor(featureFile)
                 .setFileNameRestrictionFor(featureFileNames)
-                .tryToUpdateFeatureNameSet(featureNames)
-                .setNameRestrictionFor(Arrays.asList("Scenario:", "Scenario Outline:"), scenarioNames);
+                .setNameRestrictionFor(
+                        Arrays.asList("Feature:", "Rule:", "Scenario:", "Scenario Outline:"),
+                        featureNames, ruleNames, scenarioNames);
     }
 
     private void doFormat(File featureFile) throws IOException {

@@ -37,34 +37,46 @@ public class FluentFeatureRestrictor {
         return this;
     }
 
-    public FluentFeatureRestrictor tryToUpdateFeatureNameSet(Set<String> featureNames) {
+    public FluentFeatureRestrictor tryToUpdateFeatureNameSet() {
         String featureName;
 
         for (String line : input) {
             String word = getFirstWord(line);
-            if ("Feature:".equals(word)) {
-                featureName = getAllButFirstWord(line, word);
-                if (featureNames.contains(featureName))
-                    throw new IllegalStateException("Found more than one feature file with the same feature title text:\n "
-                            + featureName + pathToCurrentFile);
-                featureNames.add(featureName);
-            }
+
         }
         return this;
     }
 
-    public FluentFeatureRestrictor setNameRestrictionFor(List<String> entities, Set<String> scenarioNames) {
+    public FluentFeatureRestrictor setNameRestrictionFor(List<String> entities,
+                                                         Set<String> featureNames,
+                                                         Set<String> ruleNames,
+                                                         Set<String> scenarioNames) {
         for (String line : input) {
             if (doesLineStartMatch(line, entities)) {
                 String word = getFirstWord(line);
-                //TODO rework - only intended to work with scenarios right now
-                String entityValue = getAllButFirstWord(line, word).replace("Outline:", "").trim();
-                System.out.println("getallbutfirstword: " + entityValue);
-                if (scenarioNames.contains(entityValue)) {
-                    throw new IllegalStateException("Found more than one scenario with same name:\n "
-                            + entityValue + pathToCurrentFile);
+                String entityValue = getAllButFirstWord(line, word).replaceAll(" Outline:", "").trim();
+                //System.out.println("getallbutfirstword: " + entityValue);
+                if (word.startsWith("Feature")) {
+                    if (featureNames.contains(entityValue))
+                        throw new IllegalStateException("Found more than one feature file with the same feature title text:\n "
+                                + entityValue + pathToCurrentFile);
+                    featureNames.add(entityValue);
                 }
-                scenarioNames.add(entityValue);
+                if (word.startsWith("Rule")) {
+                    if (ruleNames.contains(entityValue))
+                        throw new IllegalStateException("Found more than one rule with the same text:\n "
+                                + entityValue + pathToCurrentFile);
+                    ruleNames.add(entityValue);
+                }
+                if (word.startsWith("Scenario")) {
+                    if (scenarioNames.contains(entityValue)) {
+                        throw new IllegalStateException("Found more than one scenario with same name:\n "
+                                + entityValue + pathToCurrentFile);
+                    }
+                    scenarioNames.add(entityValue);
+                }
+
+
             }
         }
         return this;
@@ -79,7 +91,7 @@ public class FluentFeatureRestrictor {
     }
 
     private String getAllButFirstWord(String line, String word) {
-        return line.replaceFirst(word + "", "").trim();
+        return line.replaceFirst(word, "").trim();
     }
 
 }
