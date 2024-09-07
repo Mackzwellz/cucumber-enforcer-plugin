@@ -31,6 +31,9 @@ public class FeatureFormatterMojo extends AbstractMojo {
     @Parameter(defaultValue = "${project.basedir}", required = true, readonly = true)
     private File baseDir;
 
+    @Parameter(defaultValue = "", required = false, readonly = true)
+    private File stepDefDir;
+
     // Indents
 
     @Parameter(property = "format.featureIndent", defaultValue = "0")
@@ -94,31 +97,47 @@ public class FeatureFormatterMojo extends AbstractMojo {
                 if (applyFormatting) doFormat(featureFile);
 
                 if (applyRestrictions) {
-                    doRestrict(featureFile, featureFileNames, featureNames, scenarioNames);
+                    doFeatureRestrict(featureFile, featureFileNames, featureNames, scenarioNames);
                 }
 
             } catch (IOException e) {
                 getLog().error("Unable to process " + featureFile.getAbsolutePath(), e);
             } catch (IllegalStateException t) {
-                getLog().error("Restrictor found an issue: " + t.getMessage());
+                getLog().error("Feature restrictor found an issue: " + t.getMessage());
                 hasRestrictionIssues = true;
             } catch (Throwable t) {
                 getLog().error("Unhandled exception:", t);
             }
         }
 
+        try {
+            if (applyRestrictions) {
+                doClassRestrict();
+            }
+        } catch (IllegalStateException t) {
+            getLog().error("Step def restrictor found an issue: " + t.getMessage());
+            hasRestrictionIssues = true;
+        }
+
         if (hasRestrictionIssues) {
-            throw new MojoFailureException("Feature files contain issues, fix them to proceed! (see logs for details)");
+            throw new MojoFailureException("Some files contain issues, fix them to proceed! (see logs for details)");
         }
     }
 
-    private void doRestrict(File featureFile, Set<String> featureFileNames,
-                            Set<String> featureNames, Set<String> scenarioNames)
+    private void doClassRestrict() {
+        //File stepDefDir = new File(""); //passthrough actual dir
+        new FluentClassRestrictor(stepDefDir, new HashSet<>())
+                .restrictDuplicateStepMethodNamesAndUsages();
+    }
+
+    private void doFeatureRestrict(File featureFile, Set<String> featureFileNames,
+                                   Set<String> featureNames, Set<String> scenarioNames)
             throws IOException {
-        new FluentRestrictor(featureFile)
-        .tryToUpdateFileNameSet(featureFileNames)
-        .tryToUpdateFeatureNameSet(featureNames)
-        .setNameRestrictionFor(Arrays.asList("Scenario:", "Scenario Outline:"), scenarioNames);
+        new FluentFeatureRestrictor(featureFile)
+                .setFileNameRestrictionFor(featureFileNames)
+                .setNameRestrictionFor(
+                        Arrays.asList("Feature:", "Scenario:", "Scenario Outline:"),
+                        featureNames, scenarioNames);
     }
 
     private void doFormat(File featureFile) throws IOException {

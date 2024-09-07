@@ -9,7 +9,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Set;
 
-public class FluentRestrictor {
+public class FluentFeatureRestrictor {
 
     File file;
     Path inputPath;
@@ -20,14 +20,14 @@ public class FluentRestrictor {
      * @param file the target file for formatting
      * @throws IOException
      */
-    public FluentRestrictor(File file) throws IOException {
+    public FluentFeatureRestrictor(File file) throws IOException {
         this.file = file;
         this.inputPath = file.toPath();
         this.pathToCurrentFile = "\nPath to current file:\n " + this.inputPath;
         this.input = Files.readAllLines(inputPath, Charset.defaultCharset());
     }
 
-    public FluentRestrictor tryToUpdateFileNameSet(Set<String> featureFileNames) {
+    public FluentFeatureRestrictor setFileNameRestrictionFor(Set<String> featureFileNames) {
         String fileName = file.getName();
         if (featureFileNames.contains(fileName))
             throw new IllegalStateException("Found more than one feature file with file name:\n "
@@ -36,29 +36,21 @@ public class FluentRestrictor {
         return this;
     }
 
-    public FluentRestrictor tryToUpdateFeatureNameSet(Set<String> featureNames) {
-        String featureName;
-
-        for (String line : input) {
-            String word = getFirstWord(line);
-            if ("Feature:".equals(word)) {
-                featureName = getAllButFirstWord(line, word);
-                if (featureNames.contains(featureName))
-                    throw new IllegalStateException("Found more than one feature file with the same feature title text:\n "
-                            + featureName + pathToCurrentFile);
-                featureNames.add(featureName);
-            }
-        }
-        return this;
-    }
-
-    public FluentRestrictor setNameRestrictionFor(List<String> entity, Set<String> scenarioNames) {
+    public FluentFeatureRestrictor setNameRestrictionFor(List<String> entity, Set<String> featureNames, Set<String> scenarioNames) {
         for (String line : input) {
             String word = getFirstWord(line);
 
             if (entity.contains(word)) {
                 String entityValue = getAllButFirstWord(line, word);
                 //System.out.println("getallbutfirstword: " + entityValue);
+
+                if ("Feature:".equals(word)) {
+                    if (featureNames.contains(entityValue))
+                        throw new IllegalStateException("Found more than one feature file with the same feature title text:\n "
+                                + entityValue + pathToCurrentFile);
+                    featureNames.add(entityValue);
+                }
+
                 if (word.contains("Scenario")) {
                     if (scenarioNames.contains(entityValue)) {
                         throw new IllegalStateException("Found more than one scenario with same name:\n "
@@ -80,4 +72,5 @@ public class FluentRestrictor {
     private String getAllButFirstWord(String line, String word) {
         return line.replaceFirst(word + "", "").trim();
     }
+
 }
