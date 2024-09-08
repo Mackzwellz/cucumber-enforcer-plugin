@@ -1,4 +1,4 @@
-package steps;
+package sdimkov.cucumber.steps;
 
 import io.cucumber.java.en.When;
 import io.cucumber.java.hr.Kada;
