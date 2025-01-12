@@ -37,18 +37,9 @@ public class FluentFeatureRestrictor {
         return this;
     }
 
-    public FluentFeatureRestrictor tryToUpdateFeatureNameSet() {
-        String featureName;
-
-        for (String line : input) {
-            String word = getFirstWord(line);
-
-        }
-        return this;
-    }
-
     public FluentFeatureRestrictor setNameRestrictionFor(List<String> entities,
                                                          Set<String> featureNames,
+                                                         Set<String> backgroundNames,
                                                          Set<String> ruleNames,
                                                          Set<String> scenarioNames) {
         for (String line : input) {
@@ -61,6 +52,12 @@ public class FluentFeatureRestrictor {
                         throw new IllegalStateException("Found more than one feature file with the same feature title text:\n "
                                 + entityValue + pathToCurrentFile);
                     featureNames.add(entityValue);
+                }
+                if (word.startsWith("Background")) {
+                    if (featureNames.contains(entityValue))
+                        throw new IllegalStateException("Found more than one background with the same text:\n "
+                                + entityValue + pathToCurrentFile);
+                    backgroundNames.add(entityValue);
                 }
                 if (word.startsWith("Rule")) {
                     if (ruleNames.contains(entityValue))
