@@ -8,22 +8,30 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import sdimkov.cucumber.restrictors.FeatureDuplicateRestrictor;
+import sdimkov.cucumber.restrictors.StepReuseRestrictor;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
 
-@Mojo(name = "restrict", defaultPhase = LifecyclePhase.PROCESS_SOURCES)
-public class FeatureRestrictorMojo extends AbstractMojo {
+@Mojo(name = "enforce", defaultPhase = LifecyclePhase.PROCESS_SOURCES)
+public class FeatureEnforcerMojo extends AbstractMojo {
 
     private final String[] featureExtensions = new String[]{"feature"};
 
-    @Parameter(property = "applyRestrictions", defaultValue = "true")
-    private boolean applyRestrictions;
-
     @Parameter(defaultValue = "${project.basedir}", required = true, readonly = true)
     private File baseDir;
+
+    @Parameter(defaultValue = "", required = true, readonly = true)
+    private File stepDefDir;
+
+    @Parameter(property = "restrictDuplicateFeatures", defaultValue = "true")
+    private boolean restrictDuplicateFeatures;
+
+    @Parameter(property = "restrictReusedSteps", defaultValue = "true")
+    private boolean restrictReusedSteps;
 
     private final Set<String> featureFileNames = new HashSet<>();
     private final Set<String> featureNames = new HashSet<>();
@@ -42,7 +50,7 @@ public class FeatureRestrictorMojo extends AbstractMojo {
             try {
                 getLog().debug("Processing " + featureFile.getAbsolutePath());
 
-                if (applyRestrictions) {
+                if (restrictDuplicateFeatures) {
                     doFeatureRestrict(featureFile);
                 }
 
@@ -58,6 +66,18 @@ public class FeatureRestrictorMojo extends AbstractMojo {
             }
         }
 
+        try {
+            if (restrictReusedSteps) {
+                doStepReuseRestrict();
+            }
+        } catch (IllegalStateException t) {
+            String restrictorError = t.getMessage();
+            getLog().error("Step definition restrictor found an issue: " + restrictorError);
+            restrictorIssues.add(restrictorError);
+            hasRestrictionIssues = true;
+        }
+
+
         if (hasRestrictionIssues) {
             throw new MojoFailureException("Some files contain issues, fix them to proceed! List of issues:\n" + restrictorIssues);
         }
@@ -65,11 +85,17 @@ public class FeatureRestrictorMojo extends AbstractMojo {
 
     private void doFeatureRestrict(File featureFile)
             throws IOException {
-        new FluentFeatureRestrictor(featureFile)
+        new FeatureDuplicateRestrictor(featureFile)
                 .setFileNameRestrictionFor(featureFileNames)
                 .setNameRestrictionFor(
-                        Arrays.asList("Feature:", "Background:", "Rule:", "Scenario:", "Scenario Outline:"),
+                        Arrays.asList("Feature:", "Background:", "Rule:", "Scenario:", "Scenario Outline:", "Scenario Template:"),
                         featureNames, backgroundNames, ruleNames, scenarioNames);
+    }
+
+    private void doStepReuseRestrict() {
+        //File stepDefDir = new File(""); //passthrough actual dir
+        new StepReuseRestrictor(stepDefDir, new HashSet<>())
+                .restrictDuplicateStepMethodNamesAndUsages();
     }
 
 }

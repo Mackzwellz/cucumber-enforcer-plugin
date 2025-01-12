@@ -1,4 +1,4 @@
-package sdimkov.cucumber;
+package sdimkov.cucumber.restrictors;
 
 
 import org.apache.commons.io.FileUtils;
@@ -34,7 +34,7 @@ import java.util.jar.JarFile;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-public class FluentClassRestrictor {
+public class StepReuseRestrictor {
 
     Set<Class<? extends Annotation>> cucumberAnnotations;
     File stepDefDirectory;
@@ -45,8 +45,8 @@ public class FluentClassRestrictor {
      * @param stepDefDirectory the target directory for restricting
      * @throws IOException
      */
-    public FluentClassRestrictor(File stepDefDirectory,
-                                 Set<Class<? extends Annotation>> cucumberAnnotations) {
+    public StepReuseRestrictor(File stepDefDirectory,
+                               Set<Class<? extends Annotation>> cucumberAnnotations) {
         //load all classes in package and sub-packages, iterate over each
         Iterator<File> files = FileUtils.iterateFiles(stepDefDirectory, new String[]{"java"}, true);
         List<File> stepDefClassFiles = new ArrayList<>();
@@ -182,7 +182,7 @@ public class FluentClassRestrictor {
         return classes.stream().filter(Class::isAnnotation).map(c -> (Class<? extends Annotation>) c).collect(Collectors.toSet());
     }
 
-    public FluentClassRestrictor restrictDuplicateStepMethodNamesAndUsages() {
+    public StepReuseRestrictor restrictDuplicateStepMethodNamesAndUsages() {
         Set<String> cucumberAnnotatedMethods = findAllMethodsWithAnnotations(classes, cucumberAnnotations);
         restrict(stepDefClassFiles, cucumberAnnotatedMethods);
         return this;
