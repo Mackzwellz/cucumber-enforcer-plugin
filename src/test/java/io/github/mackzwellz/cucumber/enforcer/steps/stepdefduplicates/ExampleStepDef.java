@@ -1,4 +1,4 @@
-package sdimkov.cucumber.steps.stepdefduplicates;
+package io.github.mackzwellz.cucumber.enforcer.steps.stepdefduplicates;
 
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;

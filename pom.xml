@@ -8,24 +8,24 @@
         <maven>2.2.1</maven>
     </prerequisites>
 
-    <groupId>sdimkov</groupId>
-    <artifactId>cucumber-feature-format-plugin</artifactId>
-    <version>1.0.1-SNAPSHOT</version>
+    <groupId>io.github.mackzwellz</groupId>
+    <artifactId>cucumber-enforcer-plugin</artifactId>
+    <version>1.0.2-SNAPSHOT</version>
     <packaging>maven-plugin</packaging>
 
-    <name>Cucumber Feature Formatting Maven Plugin</name>
-    <url>https://github.com/mackzwellz/cucumber-feature-format-plugin</url>
-    <inceptionYear>2015</inceptionYear>
+    <name>Cucumber Enforcer Maven Plugin</name>
+    <url>https://github.com/mackzwellz/cucumber-enforcer-plugin</url>
+    <inceptionYear>2023</inceptionYear>
 
     <issueManagement>
         <system>Github</system>
-        <url>https://github.com/mackzwellz/cucumber-feature-format-plugin/issues</url>
+        <url>https://github.com/mackzwellz/cucumber-enforcer-plugin/issues</url>
     </issueManagement>
 
     <scm>
-        <connection>scm:git:https://github.com/mackzwellz/cucumber-feature-format-plugin.git</connection>
-        <developerConnection>scm:git:git@github.com:mackzwellz/cucumber-feature-format-plugin.git</developerConnection>
-        <url>https://github.com/mackzwellz/cucumber-feature-format-plugin</url>
+        <connection>scm:git:https://github.com/mackzwellz/cucumber-enforcer-plugin.git</connection>
+        <developerConnection>scm:git:git@github.com:mackzwellz/cucumber-enforcer-plugin.git</developerConnection>
+        <url>https://github.com/mackzwellz/cucumber-enforcer-plugin</url>
     </scm>
 
     <developers>

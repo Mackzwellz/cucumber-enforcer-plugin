@@ -1,4 +1,4 @@
-package sdimkov.cucumber.restrictors;
+package io.github.mackzwellz.cucumber.enforcer.restrictors;
 
 
 import org.apache.commons.io.FileUtils;

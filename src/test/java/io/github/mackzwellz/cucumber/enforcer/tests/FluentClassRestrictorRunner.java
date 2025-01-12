@@ -1,6 +1,6 @@
-package tests;
+package io.github.mackzwellz.cucumber.enforcer.tests;
 
-import sdimkov.cucumber.restrictors.StepReuseRestrictor;
+import io.github.mackzwellz.cucumber.enforcer.restrictors.StepReuseRestrictor;
 
 import java.io.File;
 import java.util.HashSet;

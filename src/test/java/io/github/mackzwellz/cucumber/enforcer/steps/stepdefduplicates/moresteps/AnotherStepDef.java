@@ -1,4 +1,4 @@
-package sdimkov.cucumber.steps.stepdefduplicates.moresteps;
+package io.github.mackzwellz.cucumber.enforcer.steps.stepdefduplicates.moresteps;
 
 import io.cucumber.java.en.When;
 import io.cucumber.java.hr.Kada;

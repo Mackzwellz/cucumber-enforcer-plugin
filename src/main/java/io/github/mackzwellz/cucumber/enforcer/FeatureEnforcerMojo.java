@@ -1,6 +1,7 @@
-package sdimkov.cucumber;
+package io.github.mackzwellz.cucumber.enforcer;
 
 
+import io.github.mackzwellz.cucumber.enforcer.restrictors.StepReuseRestrictor;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -8,8 +9,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
-import sdimkov.cucumber.restrictors.FeatureDuplicateRestrictor;
-import sdimkov.cucumber.restrictors.StepReuseRestrictor;
+import io.github.mackzwellz.cucumber.enforcer.restrictors.FeatureDuplicateRestrictor;
 
 import java.io.File;
 import java.io.IOException;
