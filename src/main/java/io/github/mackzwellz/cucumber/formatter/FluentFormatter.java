@@ -1,4 +1,4 @@
-package sdimkov.cucumber;
+package io.github.mackzwellz.cucumber.formatter;
 
 
 import java.io.File;

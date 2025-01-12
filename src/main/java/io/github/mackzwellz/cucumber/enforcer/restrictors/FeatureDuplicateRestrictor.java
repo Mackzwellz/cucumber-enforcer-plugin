@@ -1,4 +1,4 @@
-package sdimkov.cucumber;
+package io.github.mackzwellz.cucumber.enforcer.restrictors;
 
 
 import java.io.File;
@@ -9,7 +9,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Set;
 
-public class FluentFeatureRestrictor {
+public class FeatureDuplicateRestrictor {
 
     File file;
     Path inputPath;
@@ -20,7 +20,7 @@ public class FluentFeatureRestrictor {
      * @param file the target file for formatting
      * @throws IOException
      */
-    public FluentFeatureRestrictor(File file) throws IOException {
+    public FeatureDuplicateRestrictor(File file) throws IOException {
         this.file = file;
         this.inputPath = file.toPath();
         this.pathToCurrentFile = "\nPath to current file:\n " + this.inputPath;
@@ -28,7 +28,7 @@ public class FluentFeatureRestrictor {
         System.out.println("Processing file:" + file.getName());
     }
 
-    public FluentFeatureRestrictor setFileNameRestrictionFor(Set<String> featureFileNames) {
+    public FeatureDuplicateRestrictor setFileNameRestrictionFor(Set<String> featureFileNames) {
         String fileName = file.getName();
         if (featureFileNames.contains(fileName))
             throw new IllegalStateException("Found more than one feature file with file name:\n "
@@ -37,15 +37,15 @@ public class FluentFeatureRestrictor {
         return this;
     }
 
-    public FluentFeatureRestrictor setNameRestrictionFor(List<String> entities,
-                                                         Set<String> featureNames,
-                                                         Set<String> backgroundNames,
-                                                         Set<String> ruleNames,
-                                                         Set<String> scenarioNames) {
+    public FeatureDuplicateRestrictor setNameRestrictionFor(List<String> entities,
+                                                            Set<String> featureNames,
+                                                            Set<String> backgroundNames,
+                                                            Set<String> ruleNames,
+                                                            Set<String> scenarioNames) {
         for (String line : input) {
             if (doesLineStartMatch(line, entities)) {
                 String word = getFirstWord(line);
-                String entityValue = getAllButFirstWord(line, word).replaceAll(" Outline:", "").trim();
+                String entityValue = getAllButFirstWord(line, word).replaceAll(" (Outline|Template):", "").trim();
                 //System.out.println("getallbutfirstword: " + entityValue);
                 if (word.startsWith("Feature")) {
                     if (featureNames.contains(entityValue))
