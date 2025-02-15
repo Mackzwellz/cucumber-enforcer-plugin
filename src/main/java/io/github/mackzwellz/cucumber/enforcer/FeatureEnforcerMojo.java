@@ -1,6 +1,7 @@
 package io.github.mackzwellz.cucumber.enforcer;
 
 
+import io.github.mackzwellz.cucumber.enforcer.restrictors.FeatureDuplicateRestrictor;
 import io.github.mackzwellz.cucumber.enforcer.restrictors.StepReuseRestrictor;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.plugin.AbstractMojo;
@@ -9,7 +10,6 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
-import io.github.mackzwellz.cucumber.enforcer.restrictors.FeatureDuplicateRestrictor;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,24 +20,19 @@ import java.util.*;
 public class FeatureEnforcerMojo extends AbstractMojo {
 
     private final String[] featureExtensions = new String[]{"feature"};
-
-    @Parameter(defaultValue = "${project.basedir}", required = true, readonly = true)
-    private File baseDir;
-
-    @Parameter(defaultValue = "", required = true, readonly = true)
-    private File stepDefDir;
-
-    @Parameter(property = "restrictDuplicateFeatures", defaultValue = "true")
-    private boolean restrictDuplicateFeatures;
-
-    @Parameter(property = "restrictReusedSteps", defaultValue = "true")
-    private boolean restrictReusedSteps;
-
     private final Set<String> featureFileNames = new HashSet<>();
     private final Set<String> featureNames = new HashSet<>();
     private final Set<String> backgroundNames = new HashSet<>();
     private final Set<String> ruleNames = new HashSet<>();
     private final Set<String> scenarioNames = new HashSet<>();
+    @Parameter(defaultValue = "${project.basedir}", required = true, readonly = true)
+    private File baseDir;
+    @Parameter(defaultValue = "", required = true, readonly = true)
+    private File stepDefDir;
+    @Parameter(property = "restrictDuplicateFeatures", defaultValue = "true")
+    private boolean restrictDuplicateFeatures;
+    @Parameter(property = "restrictReusedSteps", defaultValue = "true")
+    private boolean restrictReusedSteps;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {

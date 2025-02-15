@@ -7,166 +7,156 @@ import java.io.PrintStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
-public class FluentFormatter
-{
-	private int blankLinesCount;
-	private List<String> output;
+public class FluentFormatter {
+    private final List<String> input;
+    private final Path inputPath;
+    private final Map<String, Integer> blankLineRules = new HashMap<>();
+    private final Map<String, Integer> indentRules = new HashMap<>();
+    private int blankLinesCount;
+    private List<String> output;
 
-	private final List<String> input;
-	private final Path inputPath;
+    /**
+     * @param file the target file for formatting
+     * @throws IOException
+     */
+    public FluentFormatter(File file) throws IOException {
+        inputPath = file.toPath();
+        input = Files.readAllLines(inputPath, Charset.defaultCharset());
+    }
 
-	private final Map<String, Integer> blankLineRules = new HashMap<>();
-	private final Map<String, Integer> indentRules    = new HashMap<>();
+    /**
+     * Set formatting rule that ensures count of blank lines before matched lines
+     *
+     * @param firstWord only lines starting with this word will be matched
+     * @param lines     the count of blank lines
+     * @return this for chaining
+     */
+    public FluentFormatter setBlankLinesBefore(String firstWord, int lines) {
+        validateWord(firstWord);
+        blankLineRules.put(firstWord, lines);
+        return this;
+    }
 
-	/**
-	 * @param file the target file for formatting
-	 *
-	 * @throws IOException
-	 */
-	public FluentFormatter(File file) throws IOException {
-		inputPath = file.toPath();
-		input = Files.readAllLines(inputPath, Charset.defaultCharset());
-	}
+    /**
+     * Set formatting rule that ensures indent size for matched lines
+     *
+     * @param firstWord only lines starting with this word will be matched
+     * @param indent    the indentation size (in spaces)
+     * @return this for chaining
+     */
+    public FluentFormatter setIndent(String firstWord, int indent) {
+        validateWord(firstWord);
+        indentRules.put(firstWord, indent);
+        return this;
+    }
 
-	/**
-	 * Set formatting rule that ensures count of blank lines before matched lines
-	 *
-	 * @param firstWord only lines starting with this word will be matched
-	 * @param lines the count of blank lines
-	 *
-	 * @return this for chaining
-	 */
-	public FluentFormatter setBlankLinesBefore(String firstWord, int lines) {
-		validateWord(firstWord);
-		blankLineRules.put(firstWord, lines);
-		return this;
-	}
+    /**
+     * Apply all formatting rules
+     *
+     * @return this for chaining
+     */
+    public FluentFormatter format() {
+        output = new ArrayList<>(input.size());
 
-	/**
-	 * Set formatting rule that ensures indent size for matched lines
-	 *
-	 * @param firstWord only lines starting with this word will be matched
-	 * @param indent the indentation size (in spaces)
-	 *
-	 * @return this for chaining
-	 */
-	public FluentFormatter setIndent(String firstWord, int indent) {
-		validateWord(firstWord);
-		indentRules.put(firstWord, indent);
-		return this;
-	}
+        for (String line : input) {
+            String word = getFirstWord(line);
 
-	/**
-	 * Apply all formatting rules
-	 *
-	 * @return this for chaining
-	 */
-	public FluentFormatter format() {
-		output = new ArrayList<>(input.size());
+            if (blankLineRules.containsKey(word)) {
+                applyBlankLines(blankLineRules.get(word));
+            }
+            if (indentRules.containsKey(word)) {
+                applyIndent(line, indentRules.get(word));
+            } else if ("".equals(word)) {
+                blankLinesCount++;
+                output.add("");
+            } else {
+                blankLinesCount = 0;
+                output.add(line);
+            }
+        }
 
-		for (String line : input) {
-			String word = getFirstWord(line);
+        return this;
+    }
 
-			if (blankLineRules.containsKey(word)) {
-				applyBlankLines(blankLineRules.get(word));
-			}
-			if (indentRules.containsKey(word)) {
-				applyIndent(line, indentRules.get(word));
-			}
-			else if ("".equals(word)) {
-				blankLinesCount++;
-				output.add("");
-			}
-			else {
-				blankLinesCount = 0;
-				output.add(line);
-			}
-		}
+    /**
+     * Generic print method
+     *
+     * @param stream the output stream
+     * @return this for chaining
+     */
+    public FluentFormatter print(PrintStream stream) {
+        for (String line : output)
+            stream.println(line);
+        return this;
+    }
 
-		return this;
-	}
+    /**
+     * Print to System.out
+     *
+     * @return this for chaining
+     */
+    public FluentFormatter print() {
+        return print(System.out);
+    }
 
-	/**
-	 * Generic print method
-	 *
-	 * @param stream the output stream
-	 *
-	 * @return this for chaining
-	 */
-	public FluentFormatter print(PrintStream stream) {
-		for (String line : output)
-			stream.println(line);
-		return this;
-	}
+    /**
+     * Save formatted file to given destination
+     *
+     * @param filePath the destination path
+     * @return this for chaining
+     * @throws IOException
+     */
+    public FluentFormatter saveTo(Path filePath) throws IOException {
+        Files.write(filePath, output, Charset.defaultCharset());
+        return this;
+    }
 
-	/**
-	 * Print to System.out
-	 *
-	 * @return this for chaining
-	 */
-	public FluentFormatter print() {
-		return print(System.out);
-	}
+    /**
+     * Override original file with formatted
+     *
+     * @return this for chaining
+     * @throws IOException
+     */
+    public FluentFormatter save() throws IOException {
+        return saveTo(inputPath);
+    }
 
-	/**
-	 * Save formatted file to given destination
-	 *
-	 * @param filePath the destination path
-	 *
-	 * @return this for chaining
-	 *
-	 * @throws IOException
-	 */
-	public FluentFormatter saveTo(Path filePath) throws IOException {
-		Files.write(filePath, output, Charset.defaultCharset());
-		return this;
-	}
+    private void applyIndent(String line, int indent) {
+        String indentStr = new String(new char[indent]).replace('\0', ' ');
+        output.add(indentStr + line.trim());
+        blankLinesCount = 0;
+    }
 
-	/**
-	 * Override original file with formatted
-	 *
-	 * @return this for chaining
-	 *
-	 * @throws IOException
-	 */
-	public FluentFormatter save() throws IOException {
-		return saveTo(inputPath);
-	}
+    private void applyBlankLines(int blankLines) {
+        if (blankLines == -1) return;
 
-	private void applyIndent(String line, int indent) {
-		String indentStr = new String(new char[indent]).replace('\0', ' ');
-		output.add(indentStr + line.trim());
-		blankLinesCount = 0;
-	}
+        int diff = blankLines - this.blankLinesCount;
 
-	private void applyBlankLines(int blankLines) {
-		if (blankLines == -1) return;
+        if (diff > 0) {
+            for (int i = 0; i < diff; i++)
+                output.add("");
+        } else if (diff < 0) {
+            for (int i = diff; i < 0; i++)
+                output.remove(output.size() - 1);
+        }
+    }
 
-		int diff = blankLines - this.blankLinesCount;
+    private String getFirstWord(String line) {
+        return line.trim().split(" ")[0];
+    }
 
-		if (diff > 0) {
-			for (int i = 0; i < diff; i++)
-				output.add("");
-		}
-		else if (diff < 0) {
-			for (int i = diff; i < 0; i++)
-				output.remove(output.size() - 1);
-		}
-	}
-
-	private String getFirstWord(String line) {
-		return line.trim().split(" ")[0];
-	}
-
-	private void validateWord(String word) {
-		if (word == null)
-			throw new IllegalArgumentException("Word argument can't be null");
-		if (word.length() == 0)
-			throw new IllegalArgumentException("Word argument can't be zero-length string");
-		if (word.contains(" "))
-			throw new IllegalArgumentException("Word argument can't contain spaces");
-	}
+    private void validateWord(String word) {
+        if (word == null)
+            throw new IllegalArgumentException("Word argument can't be null");
+        if (word.length() == 0)
+            throw new IllegalArgumentException("Word argument can't be zero-length string");
+        if (word.contains(" "))
+            throw new IllegalArgumentException("Word argument can't contain spaces");
+    }
 }

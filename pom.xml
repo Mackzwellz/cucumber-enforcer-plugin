@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
@@ -9,23 +9,23 @@
     </prerequisites>
 
     <groupId>io.github.mackzwellz</groupId>
-    <artifactId>cucumber-enforcer-plugin</artifactId>
-    <version>1.0.2-SNAPSHOT</version>
+    <artifactId>cucumber-enforcer-maven-plugin</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
     <packaging>maven-plugin</packaging>
 
     <name>Cucumber Enforcer Maven Plugin</name>
-    <url>https://github.com/mackzwellz/cucumber-enforcer-plugin</url>
+    <url>https://github.com/mackzwellz/cucumber-enforcer-maven-plugin</url>
     <inceptionYear>2023</inceptionYear>
 
     <issueManagement>
         <system>Github</system>
-        <url>https://github.com/mackzwellz/cucumber-enforcer-plugin/issues</url>
+        <url>https://github.com/mackzwellz/cucumber-enforcer-maven-plugin/issues</url>
     </issueManagement>
 
     <scm>
-        <connection>scm:git:https://github.com/mackzwellz/cucumber-enforcer-plugin.git</connection>
-        <developerConnection>scm:git:git@github.com:mackzwellz/cucumber-enforcer-plugin.git</developerConnection>
-        <url>https://github.com/mackzwellz/cucumber-enforcer-plugin</url>
+        <connection>scm:git:https://github.com/mackzwellz/cucumber-enforcer-maven-plugin.git</connection>
+        <developerConnection>scm:git:git@github.com:mackzwellz/cucumber-enforcer-maven-plugin.git</developerConnection>
+        <url>https://github.com/mackzwellz/cucumber-enforcer-maven-plugin</url>
     </scm>
 
     <developers>
@@ -55,6 +55,9 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-plugin-plugin</artifactId>
                 <version>3.13.1</version>
+                <configuration>
+                    <goalPrefix>cucumber-enforcer</goalPrefix>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

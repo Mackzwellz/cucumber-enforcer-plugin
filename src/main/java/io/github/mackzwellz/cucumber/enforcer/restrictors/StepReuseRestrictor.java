@@ -6,11 +6,7 @@ import org.apache.commons.io.comparator.LastModifiedFileComparator;
 import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -18,16 +14,7 @@ import java.net.URLClassLoader;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -65,31 +52,6 @@ public class StepReuseRestrictor {
         this.classes = findFileClasses(compiledStepDefDirectory, "");
         // getClassesFromFiles(stepDefClassFiles);
     }
-
-    private Set<Class<? extends Annotation>> getDefaultCucumberAnnotations() {
-        Set<Class<? extends Annotation>> cucumberAnnotations = new HashSet<>();
-        //cucumberAnnotations.add(Name.class);
-//        try {
-//            cucumberAnnotations.add((Class<? extends Annotation>) Class.forName("io.cucumber.java.en.When"));
-//        } catch (ClassNotFoundException e) {
-//            throw new RuntimeException(e);
-//        }
-
-        //FileUtils.iterateFiles(stepDefDirectory, new String[]{"class"}, true);
-
-        String mavenContainerDir = Arrays.stream(System.getProperty("java.class.path").split(";")).filter(path -> path.contains(".m2")).findFirst().orElseThrow().split(".m2")[0];
-        Path dir = Path.of(mavenContainerDir + ".m2" + File.separator + "repository" + File.separator + "io" + File.separator + "cucumber" + File.separator + "cucumber-java");
-        File cucumberJar = findLatestModified(dir, "jar");
-        Set<Class<? extends Annotation>> jarAnnotations = null;
-        try {
-            jarAnnotations = getAnnotationClassesFromJarFile(cucumberJar);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        cucumberAnnotations.addAll(jarAnnotations);
-        return cucumberAnnotations;
-    }
-
 
     public static Set<Class> findAllClassesUsingClassLoader(String packageName) {
         InputStream stream = ClassLoader.getSystemClassLoader()
@@ -182,12 +144,6 @@ public class StepReuseRestrictor {
         return classes.stream().filter(Class::isAnnotation).map(c -> (Class<? extends Annotation>) c).collect(Collectors.toSet());
     }
 
-    public StepReuseRestrictor restrictDuplicateStepMethodNamesAndUsages() {
-        Set<String> cucumberAnnotatedMethods = findAllMethodsWithAnnotations(classes, cucumberAnnotations);
-        restrict(stepDefClassFiles, cucumberAnnotatedMethods);
-        return this;
-    }
-
     private static List<Class<?>> findFileClasses(File directory, String packageName) {
         final List<Class<?>> classes = new ArrayList<Class<?>>();
         if (!directory.exists()) {
@@ -222,7 +178,6 @@ public class StepReuseRestrictor {
         }
         return classes;
     }
-
 
     private static List<Class<?>> getClassesFromFiles(List<File> fileList) {
         List<String> classNames = fileList.stream()
@@ -311,7 +266,7 @@ public class StepReuseRestrictor {
         for (int i = 0; i < value.size(); i++) {
             String fileLine = value.get(i).trim();
             if (fileLine.contains(methodName) && !fileLine.startsWith("public")) {
-                String processedFileLine = fileListEntry.getKey().getPath() + ":" + (i+1) + "\t###\t" + fileLine;
+                String processedFileLine = fileListEntry.getKey().getPath() + ":" + (i + 1) + "\t###\t" + fileLine;
                 newMatchingLines.add(processedFileLine);
             }
         }
@@ -326,6 +281,36 @@ public class StepReuseRestrictor {
                 throw new RuntimeException("Unable to process " + file.getAbsolutePath(), e);
             }
         };
+    }
+
+    private Set<Class<? extends Annotation>> getDefaultCucumberAnnotations() {
+        Set<Class<? extends Annotation>> cucumberAnnotations = new HashSet<>();
+        //cucumberAnnotations.add(Name.class);
+//        try {
+//            cucumberAnnotations.add((Class<? extends Annotation>) Class.forName("io.cucumber.java.en.When"));
+//        } catch (ClassNotFoundException e) {
+//            throw new RuntimeException(e);
+//        }
+
+        //FileUtils.iterateFiles(stepDefDirectory, new String[]{"class"}, true);
+
+        String mavenContainerDir = Arrays.stream(System.getProperty("java.class.path").split(";")).filter(path -> path.contains(".m2")).findFirst().orElseThrow().split(".m2")[0];
+        Path dir = Path.of(mavenContainerDir + ".m2" + File.separator + "repository" + File.separator + "io" + File.separator + "cucumber" + File.separator + "cucumber-java");
+        File cucumberJar = findLatestModified(dir, "jar");
+        Set<Class<? extends Annotation>> jarAnnotations = null;
+        try {
+            jarAnnotations = getAnnotationClassesFromJarFile(cucumberJar);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        cucumberAnnotations.addAll(jarAnnotations);
+        return cucumberAnnotations;
+    }
+
+    public StepReuseRestrictor restrictDuplicateStepMethodNamesAndUsages() {
+        Set<String> cucumberAnnotatedMethods = findAllMethodsWithAnnotations(classes, cucumberAnnotations);
+        restrict(stepDefClassFiles, cucumberAnnotatedMethods);
+        return this;
     }
 
 }

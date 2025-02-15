@@ -6,16 +6,17 @@ Maven Plugin to enforce some of the opinionated rules for Cucumber tests.
 
 All features are toggleable on/off.
 
-- Formatting (works mostly the same as [the original](https://github.com/sdimkov/cucumber-feature-format-plugin), but supports all Cucumber keywords)
+- Formatting (works mostly the same as [the original](https://github.com/sdimkov/cucumber-feature-format-plugin), but
+  supports all Cucumber keywords)
 - Restricting/Enforcing
     - Fail if duplicates are found (file names or Cucumber feature/background/rule/scenario names)
-      - see #2 for reference
-      - supports any programming language
-      - supports only english Cucumber keywords
+        - see #2 for reference
+        - supports any programming language
+        - supports only english Cucumber keywords
     - Fail if Cucumber steps are reused in step definition code
-      - see #4 for reference 
-      - supports Java only
-      - supports all Cucumber annotations/keywords for step definitions
+        - see #4 for reference
+        - supports Java only
+        - supports all Cucumber annotations/keywords for step definitions
 
 ### Formatting
 
